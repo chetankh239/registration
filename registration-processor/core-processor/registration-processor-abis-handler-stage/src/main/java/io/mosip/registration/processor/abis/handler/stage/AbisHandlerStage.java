@@ -1,6 +1,7 @@
 package io.mosip.registration.processor.abis.handler.stage;
 
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -610,6 +611,9 @@ public class AbisHandlerStage extends MosipVerticleAPIManager {
 				policyTypeAndSubTypeMap);
 
 		byte[] content = cbeffutil.createXML(filterExceptionBiometrics(biometricRecord,id,process).getSegments());
+        String cbeffXml = new String(content, StandardCharsets.UTF_8);
+        regProcLogger.info("========== CBEFF XML START (ID: " + id + ") ==========");
+        regProcLogger.info(cbeffXml);
         regProcLogger.info(content + "---------biometric content fetched for datashare");
 		MultiValueMap<String, Object> map = new LinkedMultiValueMap<>();
 		map.add("name", individualBiometricsLabel);
