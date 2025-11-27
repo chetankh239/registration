@@ -629,12 +629,17 @@ public class AbisHandlerStage extends MosipVerticleAPIManager {
 
 		List<String> pathSegments = new ArrayList<>();
 		pathSegments.add(policyId);
+        regProcLogger.info(policyId + "---------policy id for datashare");
 		pathSegments.add(subscriberId);
+        regProcLogger.info(subscriberId + "---------subscriber id for datashare");
 		String protocol = StringUtils.isNotEmpty(httpProtocol) ? PolicyConstant.HTTP_PROTOCOL : PolicyConstant.HTTPS_PROTOCOL;
 		String url = null;
 
-		if (!CollectionUtils.isEmpty(datasharePolicies) && datasharePolicies.get(PolicyConstant.SHAREDOMAIN_WRITE) != null)
-			url = datasharePolicies.get(PolicyConstant.SHAREDOMAIN_WRITE) + env.getProperty(ApiName.DATASHARECREATEURL.name());
+		if (!CollectionUtils.isEmpty(datasharePolicies) && datasharePolicies.get(PolicyConstant.SHAREDOMAIN_WRITE) != null) {
+            url = datasharePolicies.get(PolicyConstant.SHAREDOMAIN_WRITE) + env.getProperty(ApiName.DATASHARECREATEURL.name());
+            regProcLogger.info("Datashare URL: " + url);
+            regProcLogger.info("Datashare Pl: " + url);
+        }
 		else
 			url = protocol + internalDomainName + env.getProperty(ApiName.DATASHARECREATEURL.name());
 		url = url.replaceAll("[\\[\\]]", "");
