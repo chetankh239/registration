@@ -724,6 +724,8 @@ public class BioDedupeProcessor {
 	}
 
 	private boolean compareDemoDedupe(String id, String process, Map<String, String> matchedAttribute) throws ApisResourceAccessException, IOException, PacketManagerException, JsonProcessingException {
+		// Known gap: this still reads the current packet from Packet Manager, so it fails if the packet
+		// files are gone after ABIS. The LOST draft only holds a few fields, so it cannot replace this yet.
 		// Fetch all fields in one bulk call instead of one HTTP call per attribute key
 		Map<String, String> fields = priorityBasedPacketManagerService.getFields(
 				id, new ArrayList<>(matchedAttribute.keySet()), process, ProviderStageName.BIO_DEDUPE);

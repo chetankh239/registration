@@ -943,11 +943,15 @@ public class Utility {
 	 * @return
 	 * @throws BiometricClassificationException
 	 */
-	public boolean allBiometricHaveException(String rid, String registrationType, ProviderStageName stageName) throws BiometricClassificationException {
+	public boolean allBiometricHaveException(String rid, String registrationType, ProviderStageName stageName) throws BiometricClassificationException,
+			IdrepoDraftException, IdrepoDraftReprocessableException {
 		try {
 			String uin = getUinFromDraft(rid);
 			BiometricRecord bm = getBiometricRecordfromIdrepo(uin, rid);
 			return allBiometricHaveException(bm.getSegments(), rid);
+		} catch (IdrepoDraftException | IdrepoDraftReprocessableException e) {
+			// Let the caller retry or fail the packet; do not turn draft errors into a classification error.
+			throw e;
 		} catch (Exception e) {
 			regProcLogger.error(LoggerFileConstant.SESSIONID.toString(), LoggerFileConstant.REGISTRATIONID.toString(), rid,
 					"utility::allBiometricHaveException():: Error while classifying biometric exceptions", e);

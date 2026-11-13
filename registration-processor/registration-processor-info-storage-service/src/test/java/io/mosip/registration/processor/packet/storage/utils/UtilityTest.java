@@ -685,7 +685,7 @@ public class UtilityTest {
     }
 
     @Test(expected = BiometricClassificationException.class)
-    public void testAllBiometricHaveException_rid_exception() throws PacketManagerException, ApisResourceAccessException, IOException, JsonProcessingException {
+    public void testAllBiometricHaveException_rid_exception() throws PacketManagerException, ApisResourceAccessException, IOException, JsonProcessingException, IdrepoDraftException, IdrepoDraftReprocessableException {
         String rid = "6654322111444444";
         String registrationType = "UPDATE";
         ProviderStageName stageName = ProviderStageName.BIO_DEDUPE;
@@ -1229,16 +1229,23 @@ public class UtilityTest {
     }
 
     @Test
-    public void testGetUinFromDraft_returnsUin() throws Exception {
+    public void should_returnUin_when_draftContainsUin() throws Exception {
         stubDraftUin("1234567890");
         assertEquals("1234567890", utility.getUinFromDraft("rid1"));
     }
 
     @Test
-    public void testGetUinFromDraft_noUinOrNoDraft_returnsNull() throws Exception {
+    public void should_returnNull_when_uinOrDraftIsAbsent() throws Exception {
         stubDraftUin(null);
         assertNull(utility.getUinFromDraft("rid1"));
         when(idrepoDraftService.idrepoGetDraft("rid2", "demographics")).thenReturn(null);
         assertNull(utility.getUinFromDraft("rid2"));
+    }
+
+    @Test(expected = IdrepoDraftReprocessableException.class)
+    public void should_rethrowDraftException_when_allBiometricHaveExceptionDraftLookupIsRetryable() throws Exception {
+        when(idrepoDraftService.idrepoGetDraft(anyString(), anyString()))
+                .thenThrow(new IdrepoDraftReprocessableException("code", "retry"));
+        utility.allBiometricHaveException("rid1", "UPDATE", ProviderStageName.BIO_DEDUPE);
     }
 }

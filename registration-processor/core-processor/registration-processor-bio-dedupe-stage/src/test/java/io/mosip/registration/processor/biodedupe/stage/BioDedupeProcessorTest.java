@@ -529,7 +529,7 @@ public class BioDedupeProcessorTest {
 	}
 
 	@Test
-	public void testLostPacketPostAbisDoesNotValidateCbeffFromPacketManager() throws Exception {
+	public void should_skipCbeffValidation_when_lostPacketIsPostAbis() throws Exception {
 		registrationStatusDto.setRegistrationId("reg1234");
 		registrationStatusDto.setRegistrationType("LOST");
 		Mockito.when(registrationStatusService.getRegistrationStatus(any(),any(),any(), any())).thenReturn(registrationStatusDto);

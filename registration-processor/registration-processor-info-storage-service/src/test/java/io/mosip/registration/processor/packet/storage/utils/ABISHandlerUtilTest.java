@@ -140,7 +140,7 @@ public class ABISHandlerUtilTest {
     }
 
     @Test
-    public void testUpdateReadsPacketUinFromDraftNotPacketManager() throws Exception {
+    public void should_readUinFromDraftWithoutPacketManager_when_matchingUpdatePacket() throws Exception {
         // the packet UIN comes from the ID Repo draft and equals the UIN of one matched RID
         when(utility.getUinFromDraft(registrationId)).thenReturn("123456789");
 
