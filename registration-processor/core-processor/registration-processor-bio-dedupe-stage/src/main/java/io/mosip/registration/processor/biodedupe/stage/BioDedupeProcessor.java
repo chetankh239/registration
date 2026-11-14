@@ -222,10 +222,8 @@ public class BioDedupeProcessor {
 
 			} else if (registrationType.equalsIgnoreCase(SyncTypeDto.LOST.toString())) {
 				// The CBEFF check reads the packet from Packet Manager, so run it only before ABIS.
-				if (packetStatus.equalsIgnoreCase(AbisConstant.PRE_ABIS_IDENTIFICATION)) {
-					if (isValidCbeff(object)) {
-						lostPacketPreAbisIdentification(registrationStatusDto, object);
-					}
+				if (packetStatus.equalsIgnoreCase(AbisConstant.PRE_ABIS_IDENTIFICATION) && isValidCbeff(object)) {
+					lostPacketPreAbisIdentification(registrationStatusDto, object);
 				} else if (packetStatus.equalsIgnoreCase(AbisConstant.POST_ABIS_IDENTIFICATION)) {
 					ProcessedMatchedResult processedMatchedResult = abisHandlerUtil
 							.getProcessedMatchedResult(registrationStatusDto.getRegistrationId(),
