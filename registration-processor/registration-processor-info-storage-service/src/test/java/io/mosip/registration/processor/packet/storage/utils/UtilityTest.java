@@ -1218,10 +1218,6 @@ public class UtilityTest {
     }
 
     private void stubDraftUin(String uin) throws IOException, ApisResourceAccessException, IdrepoDraftException, IdrepoDraftReprocessableException {
-        JSONObject mapping = utilities.getRegistrationProcessorMappingJson("identity");
-        LinkedHashMap<String, Object> uinValue = new LinkedHashMap<>();
-        uinValue.put("value", "UIN");
-        mapping.put("uin", uinValue);
         ResponseDTO draft = new ResponseDTO();
         draft.setIdentity(uin == null ? new java.util.HashMap<String, Object>()
                 : java.util.Collections.singletonMap("UIN", uin));
@@ -1232,6 +1228,26 @@ public class UtilityTest {
     public void should_returnUin_when_draftContainsUin() throws Exception {
         stubDraftUin("1234567890");
         assertEquals("1234567890", utility.getUinFromDraft("rid1"));
+    }
+
+    @Test
+    public void should_returnUin_when_uinFieldIsMappedToAnotherName() throws Exception {
+        // a country may call the UIN field NIN in the identity mapping, but the draft always keeps it as "UIN"
+        JSONObject mapping = utilities.getRegistrationProcessorMappingJson("identity");
+        LinkedHashMap<String, Object> uinValue = new LinkedHashMap<>();
+        uinValue.put("value", "NIN");
+        mapping.put("uin", uinValue);
+        stubDraftUin("1234567890");
+        assertEquals("1234567890", utility.getUinFromDraft("rid1"));
+    }
+
+    @Test
+    public void should_returnNull_when_draftHasOnlyLowercaseUinKey() throws Exception {
+        // the key is case sensitive: "uin" is the mapping key, not the draft key
+        ResponseDTO draft = new ResponseDTO();
+        draft.setIdentity(java.util.Collections.singletonMap("uin", "1234567890"));
+        when(idrepoDraftService.idrepoGetDraft(anyString(), anyString())).thenReturn(draft);
+        assertNull(utility.getUinFromDraft("rid1"));
     }
 
     @Test
