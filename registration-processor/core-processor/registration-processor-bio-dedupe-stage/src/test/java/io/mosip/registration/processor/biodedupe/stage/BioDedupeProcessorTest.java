@@ -740,12 +740,12 @@ public class BioDedupeProcessorTest {
 	}
 
 	@Test
-	public void testLostPacketValidationCbeffNotFound() throws Exception {
+	public void should_failPacket_when_lostPacketIsPreAbisAndCbeffNotFound() throws Exception {
 		Mockito.doThrow(new CbeffNotFoundException("Exception")).when(cbeffValidateAndVerificatonService).validateBiometrics(any(), any());
 		registrationStatusDto.setRegistrationId("reg1234");
 		registrationStatusDto.setRegistrationType("LOST");
 		Mockito.when(registrationStatusService.getRegistrationStatus(any(),any(),any(), any())).thenReturn(registrationStatusDto);
-		Mockito.when(abisHandlerUtil.getPacketStatus(any())).thenReturn(AbisConstant.POST_ABIS_IDENTIFICATION);
+		Mockito.when(abisHandlerUtil.getPacketStatus(any())).thenReturn(AbisConstant.PRE_ABIS_IDENTIFICATION);
 		Mockito.when(bioDedupeService.getFileByRegId(anyString(),anyString())).thenReturn(null);
 		Mockito.when(restClientService.getApi(any(), any(), anyString(), any(), any())).thenReturn(null);
 		MessageDTO messageDto = bioDedupeProcessor.process(dto, stageName);
