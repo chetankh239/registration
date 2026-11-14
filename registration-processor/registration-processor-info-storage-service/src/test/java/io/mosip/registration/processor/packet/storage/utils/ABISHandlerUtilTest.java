@@ -38,6 +38,7 @@ import java.util.List;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.Matchers.anyString;
@@ -163,15 +164,29 @@ public class ABISHandlerUtilTest {
     }
 
     @Test
-    public void should_notThrowAndKeepMatchedRids_when_updatePacketDraftHasNoUin() throws Exception {
-        // the draft has no UIN, so the packet UIN is null. This must not throw and must not count as a UIN match
+    public void should_throwIllegalState_when_updatePacketDraftHasNoUinAndRidsMatched() throws Exception {
+        // an UPDATE draft is created from the existing UIN, so a missing UIN is bad data: fail instead of
+        // treating every matched RID as a different person
         when(utility.getUinFromDraft(registrationId)).thenReturn(null);
 
-        ProcessedMatchedResult result = abisHandlerUtil.getProcessedMatchedResult(registrationId, "UPDATE", 1, "", ProviderStageName.BIO_DEDUPE);
+        try {
+            abisHandlerUtil.getProcessedMatchedResult(registrationId, "UPDATE", 1, "", ProviderStageName.BIO_DEDUPE);
+            fail("Expected IllegalStateException");
+        } catch (IllegalStateException e) {
+            assertTrue(e.getMessage().contains(registrationId));
+        }
+    }
 
-        assertFalse(result.isBiometricMatchedForPacketUIN());
-        // 1 in-progress RID + 2 processed RIDs that have a different UIN
-        assertEquals(3, result.getMatchedResults().size());
+    @Test
+    public void should_throwIllegalState_when_updatePacketDraftUinIsBlank() throws Exception {
+        when(utility.getUinFromDraft(registrationId)).thenReturn("  ");
+
+        try {
+            abisHandlerUtil.getProcessedMatchedResult(registrationId, "UPDATE", 1, "", ProviderStageName.BIO_DEDUPE);
+            fail("Expected IllegalStateException");
+        } catch (IllegalStateException e) {
+            assertTrue(e.getMessage().contains(registrationId));
+        }
     }
 
     @Test

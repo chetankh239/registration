@@ -1244,6 +1244,19 @@ public class BioDedupeProcessorTest {
 	}
 
 	@Test
+	public void should_failPacket_when_updatePostAbisDraftHasNoUin() throws Exception {
+		setUpUpdatePostAbisPacket();
+		when(abisHandlerUtil.getProcessedMatchedResult(anyString(), anyString(), anyInt(), anyString(), any()))
+				.thenThrow(new IllegalStateException("UIN not found in the ID Repo draft for registration id 10049100271000420250319064824"));
+
+		MessageDTO messageDto = bioDedupeProcessor.process(dto, stageName);
+
+		assertTrue(messageDto.getInternalError());
+		assertEquals(RegistrationStatusCode.FAILED.name(), registrationStatusDto.getStatusCode());
+		assertTrue(registrationStatusDto.getStatusComment().contains("UIN not found in the ID Repo draft"));
+	}
+
+	@Test
 	public void should_failPacket_when_updatePostAbisInfantCheckDraftLookupFails() throws Exception {
 		setUpUpdatePostAbisPacket();
 		when(utility.wasInfantWhenLastPacketProcessed(anyString(), anyString(), any()))

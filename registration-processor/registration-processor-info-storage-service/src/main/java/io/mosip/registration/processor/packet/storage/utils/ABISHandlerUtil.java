@@ -352,6 +352,10 @@ public class ABISHandlerUtil {
 		if (isUpdate && !matchedRegistrationIds.isEmpty()) {
 			// Post-ABIS: read the packet UIN from the ID Repo draft once, not Packet Manager.
 			packetUin = utility.getUinFromDraft(registrationId);
+			if (packetUin == null || packetUin.trim().isEmpty()) {
+				throw new IllegalStateException("UIN not found in the ID Repo draft for registration id "
+						+ registrationId + ", cannot compare it with the matched UINs");
+			}
 		}
 		for (String machedRegId : matchedRegistrationIds) {
 
