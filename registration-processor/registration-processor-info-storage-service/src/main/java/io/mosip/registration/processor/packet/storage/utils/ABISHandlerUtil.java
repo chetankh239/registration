@@ -347,14 +347,18 @@ public class ABISHandlerUtil {
 		Map<String, String> filteredRegMap = new LinkedHashMap<>();
 		Set<String> filteredRIds = new HashSet<>();
 		ProcessedMatchedResult processedMatchedResult = new ProcessedMatchedResult();
+		boolean isUpdate = registrationType.equalsIgnoreCase(SyncTypeDto.UPDATE.toString());
+		String packetUin = null;
+		if (isUpdate && !matchedRegistrationIds.isEmpty()) {
+			// Post-ABIS: read the packet UIN from the ID Repo draft once, not Packet Manager.
+			packetUin = utility.getUinFromDraft(registrationId);
+		}
 		for (String machedRegId : matchedRegistrationIds) {
 
 			String matchedUin = idRepoService.getUinByRid(machedRegId,
 					utilities.getGetRegProcessorDemographicIdentity());
 
-			if (registrationType.equalsIgnoreCase(SyncTypeDto.UPDATE.toString())) {
-				// Post-ABIS: read the packet UIN from the ID Repo draft, not Packet Manager.
-				String packetUin = utility.getUinFromDraft(registrationId);
+			if (isUpdate) {
 				if (matchedUin != null) {
 					if (matchedUin.equals(packetUin)) {
 						// Explicitly capture that UIN matched

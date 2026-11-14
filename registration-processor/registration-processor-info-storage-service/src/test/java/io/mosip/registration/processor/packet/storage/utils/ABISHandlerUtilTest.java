@@ -43,6 +43,7 @@ import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -148,8 +149,17 @@ public class ABISHandlerUtilTest {
         ProcessedMatchedResult result = abisHandlerUtil.getProcessedMatchedResult(registrationId, "UPDATE", 1, "", ProviderStageName.BIO_DEDUPE);
 
         assertTrue(result.isBiometricMatchedForPacketUIN());
-        verify(utility, atLeastOnce()).getUinFromDraft(registrationId);
+        // several RIDs matched, but the draft is read only once
+        verify(utility, times(1)).getUinFromDraft(registrationId);
         verify(utility, never()).getUIn(any(), any(), any());
+    }
+
+    @Test
+    public void should_notReadDraft_when_updatePacketHasNoMatchedRids() throws Exception {
+        abisHandlerUtil.getProcessedMatchedResult(new ArrayList<>(), registrationId, "UPDATE", ProviderStageName.BIO_DEDUPE);
+
+        // nothing to compare, so the draft is not read
+        verify(utility, never()).getUinFromDraft(any());
     }
 
     @Test
