@@ -274,8 +274,6 @@ public class Utility {
 		if (draft == null || !(draft.getIdentity() instanceof Map)) {
 			return null;
 		}
-		// ID Repo always keeps the UIN under the fixed key "UIN" in the draft identity, whatever the
-		// UIN field is called in the identity mapping, so do not use the mapped field name here.
 		Object uin = ((Map<?, ?>) draft.getIdentity()).get(AbisConstant.UIN);
 		return uin != null ? String.valueOf(uin) : null;
 	}
