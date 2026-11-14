@@ -17,8 +17,6 @@ import io.mosip.registration.processor.core.idrepo.dto.IdVidMetadataRequest;
 import io.mosip.registration.processor.core.idrepo.dto.IdVidMetadataResponse;
 import io.mosip.registration.processor.core.logger.RegProcessorLogger;
 import io.mosip.registration.processor.core.util.JsonUtil;
-import io.mosip.registration.processor.packet.manager.exception.IdrepoDraftException;
-import io.mosip.registration.processor.packet.manager.exception.IdrepoDraftReprocessableException;
 import io.mosip.registration.processor.packet.manager.dto.ResponseDTO;
 import io.mosip.registration.processor.packet.manager.idreposervice.IdRepoService;
 import io.mosip.registration.processor.packet.manager.idreposervice.IdrepoDraftService;
@@ -200,7 +198,7 @@ public class UtilityTest {
     }
 
     @Test
-    public void testWasInfantWhenLastPacketProcessed_infantScenario_returnsTrue() throws IOException, ApisResourceAccessException, PacketManagerException, JsonProcessingException, IdrepoDraftException, IdrepoDraftReprocessableException {
+    public void testWasInfantWhenLastPacketProcessed_infantScenario_returnsTrue() throws IOException, ApisResourceAccessException, PacketManagerException, JsonProcessingException {
 
 
         String registrationId = "10049100271000420250319064824";
@@ -220,7 +218,8 @@ public class UtilityTest {
         identityJson.put("dateOfBirth", dob);
 
         Mockito.when(idRepoService.getIdJsonFromIDRepo(anyString(), any())).thenReturn(identityJson);
-        stubDraftUin(uin);
+        Mockito.when(packetManagerService.getFieldByMappingJsonKey(anyString(), anyString(), anyString(), any()))
+                .thenReturn(uin);
 
         doReturn(mockIdVidMetadataResponse).when(utility).getIdVidMetadata(anyString(), any());
         doReturn(LocalDate.of(2023, 1, 1))
@@ -249,7 +248,7 @@ public class UtilityTest {
     }
 
     @Test
-    public void testWasInfantWhenLastPacketProcessed_Success_idvid() throws IOException, ApisResourceAccessException, PacketManagerException, JsonProcessingException, IdrepoDraftException, IdrepoDraftReprocessableException {
+    public void testWasInfantWhenLastPacketProcessed_Success_idvid() throws IOException, ApisResourceAccessException, PacketManagerException, JsonProcessingException {
 
         String uin = "12345";
         String dob = "2023/01/01";
@@ -260,7 +259,8 @@ public class UtilityTest {
         identityJson.put("packetCreatedOn", packetCreatedDate);
 
         Mockito.when(idRepoService.getIdJsonFromIDRepo(anyString(), any())).thenReturn(identityJson);
-        stubDraftUin(uin);
+        Mockito.when(packetManagerService.getFieldByMappingJsonKey(anyString(), anyString(), anyString(), any()))
+                .thenReturn(uin);
 
         boolean result = utility.wasInfantWhenLastPacketProcessed(
                 "10004133140010820251009123300", "UPDATE", ProviderStageName.BIO_DEDUPE);
@@ -269,17 +269,18 @@ public class UtilityTest {
     }
 
     @Test(expected = PacketDateComputationException.class)
-    public void testWasInfantWhenLastPacketProcessed_NullidvidResponse() throws IOException, ApisResourceAccessException, PacketManagerException, JsonProcessingException, IdrepoDraftException, IdrepoDraftReprocessableException {
+    public void testWasInfantWhenLastPacketProcessed_NullidvidResponse() throws IOException, ApisResourceAccessException, PacketManagerException, JsonProcessingException {
 
         String uin = "123458665";
         Mockito.when(idRepoService.getIdJsonFromIDRepo(anyString(), any())).thenReturn(null);
-        stubDraftUin(uin);
+        Mockito.when(packetManagerService.getFieldByMappingJsonKey(anyString(), anyString(), anyString(), any()))
+                .thenReturn(uin);
         utility.wasInfantWhenLastPacketProcessed(
                 "10004133140010820251009123300", "UPDATE", ProviderStageName.BIO_DEDUPE);
     }
 
     @Test(expected = PacketDateComputationException.class)
-    public void testWasInfantWhenLastPacketProcessed_NullDOB() throws IOException, ApisResourceAccessException, PacketManagerException, JsonProcessingException, IdrepoDraftException, IdrepoDraftReprocessableException {
+    public void testWasInfantWhenLastPacketProcessed_NullDOB() throws IOException, ApisResourceAccessException, PacketManagerException, JsonProcessingException {
 
         String uin = "123458665";
         String packetCreatedDate = "2025-04-30T07:04:49.681Z";
@@ -287,13 +288,14 @@ public class UtilityTest {
         JSONObject identityJson = new JSONObject();
         identityJson.put("packetCreatedOn", packetCreatedDate);
         Mockito.when(idRepoService.getIdJsonFromIDRepo(anyString(), any())).thenReturn(identityJson);
-        stubDraftUin(uin);
+        Mockito.when(packetManagerService.getFieldByMappingJsonKey(anyString(), anyString(), anyString(), any()))
+                .thenReturn(uin);
         utility.wasInfantWhenLastPacketProcessed(
                 "10004133140010820251009123300", "UPDATE", ProviderStageName.BIO_DEDUPE);
     }
 
     @Test(expected = PacketDateComputationException.class)
-    public void testWasInfantWhenLastPacketProcessed_NullPacketCreatedOn() throws IOException, ApisResourceAccessException, PacketManagerException, JsonProcessingException, IdrepoDraftException, IdrepoDraftReprocessableException {
+    public void testWasInfantWhenLastPacketProcessed_NullPacketCreatedOn() throws IOException, ApisResourceAccessException, PacketManagerException, JsonProcessingException {
 
         String uin = "1444458665";
         String dob = "2023/01/01";
@@ -301,7 +303,8 @@ public class UtilityTest {
         JSONObject identityJson = new JSONObject();
         identityJson.put("dateOfBirth", dob);
         Mockito.when(idRepoService.getIdJsonFromIDRepo(anyString(), any())).thenReturn(identityJson);
-        stubDraftUin(uin);
+        Mockito.when(packetManagerService.getFieldByMappingJsonKey(anyString(), anyString(), anyString(), any()))
+                .thenReturn(uin);
         utility.wasInfantWhenLastPacketProcessed(
                 "10004133140010820251009123300", "UPDATE", ProviderStageName.BIO_DEDUPE);
     }
@@ -325,11 +328,12 @@ public class UtilityTest {
     }
 
     @Test(expected = PacketDateComputationException.class)
-    public void testWasInfantWhenLastPacketProcessed_nullIdVidMetadata_throwsPacketDateComputationException() throws PacketManagerException, ApisResourceAccessException, IOException, JsonProcessingException, IdrepoDraftException, IdrepoDraftReprocessableException {
+    public void testWasInfantWhenLastPacketProcessed_nullIdVidMetadata_throwsPacketDateComputationException() throws PacketManagerException, ApisResourceAccessException, IOException, JsonProcessingException {
 
         String uin = "12345";
         String dob = "2023/01/01";
-        stubDraftUin(uin);
+        Mockito.when(packetManagerService.getFieldByMappingJsonKey(anyString(), anyString(), anyString(), any(ProviderStageName.class)))
+                .thenReturn(uin);
         JSONObject identityJson = createIdentityJsonWithDob(dob);
         when(idRepoService.getIdJsonFromIDRepo(anyString(), any()))
                 .thenReturn(identityJson);
@@ -350,11 +354,12 @@ public class UtilityTest {
     }
 
     @Test
-    public void testWasInfantWhenLastPacketProcessed_returnIdVidMetadata() throws PacketManagerException, ApisResourceAccessException, IOException, JsonProcessingException, IdrepoDraftException, IdrepoDraftReprocessableException {
+    public void testWasInfantWhenLastPacketProcessed_returnIdVidMetadata() throws PacketManagerException, ApisResourceAccessException, IOException, JsonProcessingException {
 
         String uin = "12345";
         String dob = "2023/01/01";
-        stubDraftUin(uin);
+        Mockito.when(packetManagerService.getFieldByMappingJsonKey(anyString(), anyString(), anyString(), any(ProviderStageName.class)))
+                .thenReturn(uin);
         JSONObject identityJson = createIdentityJsonWithDob(dob);
         when(idRepoService.getIdJsonFromIDRepo(anyString(), any()))
                 .thenReturn(identityJson);
@@ -372,11 +377,12 @@ public class UtilityTest {
     }
 
     @Test
-    public void testWasInfantWhenLastPacketProcessed_fromRegListTable_returnsTrue() throws PacketManagerException, ApisResourceAccessException, IOException, JsonProcessingException, IdrepoDraftException, IdrepoDraftReprocessableException {
+    public void testWasInfantWhenLastPacketProcessed_fromRegListTable_returnsTrue() throws PacketManagerException, ApisResourceAccessException, IOException, JsonProcessingException {
 
         String uin = "123454433";
         String dob = "2021/01/01";
-        stubDraftUin(uin);
+        Mockito.when(packetManagerService.getFieldByMappingJsonKey(anyString(), anyString(), anyString(), any(ProviderStageName.class)))
+                .thenReturn(uin);
         JSONObject identityJson = createIdentityJsonWithDob(dob);
         when(idRepoService.getIdJsonFromIDRepo(anyString(), any()))
                 .thenReturn(identityJson);
@@ -402,11 +408,12 @@ public class UtilityTest {
     }
 
     @Test
-    public void testWasInfant_LastPacketFromRidFallback() throws PacketManagerException, ApisResourceAccessException, IOException, JsonProcessingException, IdrepoDraftException, IdrepoDraftReprocessableException {
+    public void testWasInfant_LastPacketFromRidFallback() throws PacketManagerException, ApisResourceAccessException, IOException, JsonProcessingException {
 
         String uin = "12345";
         String dob = "2023/01/01";
-        stubDraftUin(uin);
+        Mockito.when(packetManagerService.getFieldByMappingJsonKey(anyString(), anyString(), anyString(), any(ProviderStageName.class)))
+                .thenReturn(uin);
         JSONObject identityJson = createIdentityJsonWithDob(dob);
         when(idRepoService.getIdJsonFromIDRepo(anyString(), any()))
                 .thenReturn(identityJson);
@@ -432,11 +439,12 @@ public class UtilityTest {
     }
 
     @Test
-    public void testWasInfant_computePacketCreatedFromIdentityUpdate_returnUpdatedOn() throws PacketManagerException, ApisResourceAccessException, IOException, JsonProcessingException, IdrepoDraftException, IdrepoDraftReprocessableException {
+    public void testWasInfant_computePacketCreatedFromIdentityUpdate_returnUpdatedOn() throws PacketManagerException, ApisResourceAccessException, IOException, JsonProcessingException {
 
         String uin = "6654433332";
         String dob = "2022/01/01";
-        stubDraftUin(uin);
+        Mockito.when(packetManagerService.getFieldByMappingJsonKey(anyString(), anyString(), anyString(), any(ProviderStageName.class)))
+                .thenReturn(uin);
         JSONObject identityJson = createIdentityJsonWithDob(dob);
         when(idRepoService.getIdJsonFromIDRepo(anyString(), any()))
                 .thenReturn(identityJson);
@@ -459,11 +467,12 @@ public class UtilityTest {
     }
 
     @Test
-    public void testWasInfant_computePacketCreatedFromIdentityUpdate_returnCreatedOn() throws PacketManagerException, ApisResourceAccessException, IOException, JsonProcessingException, IdrepoDraftException, IdrepoDraftReprocessableException {
+    public void testWasInfant_computePacketCreatedFromIdentityUpdate_returnCreatedOn() throws PacketManagerException, ApisResourceAccessException, IOException, JsonProcessingException {
 
         String uin = "6654433332";
         String dob = "2022/01/01";
-        stubDraftUin(uin);
+        Mockito.when(packetManagerService.getFieldByMappingJsonKey(anyString(), anyString(), anyString(), any(ProviderStageName.class)))
+                .thenReturn(uin);
         JSONObject identityJson = createIdentityJsonWithDob(dob);
         when(idRepoService.getIdJsonFromIDRepo(anyString(), any()))
                 .thenReturn(identityJson);
@@ -485,12 +494,13 @@ public class UtilityTest {
     }
 
     @Test
-    public void testWasInfantWhenLastPacketProcessed_InfantWithinBuffer_ReturnsTrue() throws PacketManagerException, ApisResourceAccessException, IOException, JsonProcessingException, IdrepoDraftException, IdrepoDraftReprocessableException {
+    public void testWasInfantWhenLastPacketProcessed_InfantWithinBuffer_ReturnsTrue() throws PacketManagerException, ApisResourceAccessException, IOException, JsonProcessingException {
 
         String uin = "6654433332";
         String dob = "2020/01/01";
         ReflectionTestUtils.setField(utility, "ageLimitBuffer", 3);
-        stubDraftUin(uin);
+        Mockito.when(packetManagerService.getFieldByMappingJsonKey(anyString(), anyString(), anyString(), any(ProviderStageName.class)))
+                .thenReturn(uin);
         JSONObject identityJson = createIdentityJsonWithDob(dob);
         when(idRepoService.getIdJsonFromIDRepo(anyString(), any()))
                 .thenReturn(identityJson);
@@ -512,7 +522,7 @@ public class UtilityTest {
     }
 
     @Test
-    public void testWasInfantWhenLastPacketProcessed_lastPacketProcessedTimeGreaterThanDOB_withExpectedPacketProcessingDurationHours() throws PacketManagerException, ApisResourceAccessException, IOException, JsonProcessingException, IdrepoDraftException, IdrepoDraftReprocessableException {
+    public void testWasInfantWhenLastPacketProcessed_lastPacketProcessedTimeGreaterThanDOB_withExpectedPacketProcessingDurationHours() throws PacketManagerException, ApisResourceAccessException, IOException, JsonProcessingException {
 
         String uin = "12345";
         String dob = "2020/01/01";
@@ -524,7 +534,8 @@ public class UtilityTest {
         identityJson.put("packetCreatedOn", packetCreatedDate);
 
         Mockito.when(idRepoService.getIdJsonFromIDRepo(anyString(), any())).thenReturn(identityJson);
-        stubDraftUin(uin);
+        Mockito.when(packetManagerService.getFieldByMappingJsonKey(anyString(), anyString(), anyString(), any()))
+                .thenReturn(uin);
 
         boolean result = utility.wasInfantWhenLastPacketProcessed("10049100271000420250319064824", "UPDATE", ProviderStageName.BIO_DEDUPE);
         assertTrue(result);
@@ -547,11 +558,12 @@ public class UtilityTest {
     }
 
     @Test(expected = PacketDateComputationException.class)
-    public void testComputePacketCreatedFromIdentityUpdate_ParseException() throws PacketManagerException, ApisResourceAccessException, IOException, JsonProcessingException, IdrepoDraftException, IdrepoDraftReprocessableException {
+    public void testComputePacketCreatedFromIdentityUpdate_ParseException() throws PacketManagerException, ApisResourceAccessException, IOException, JsonProcessingException {
 
         String uin = "6654433332";
         String dob = "2022/01/01";
-        stubDraftUin(uin);
+        Mockito.when(packetManagerService.getFieldByMappingJsonKey(anyString(), anyString(), anyString(), any(ProviderStageName.class)))
+                .thenReturn(uin);
         JSONObject identityJson = createIdentityJsonWithDob(dob);
         when(idRepoService.getIdJsonFromIDRepo(anyString(), any()))
                 .thenReturn(identityJson);
@@ -685,7 +697,7 @@ public class UtilityTest {
     }
 
     @Test(expected = BiometricClassificationException.class)
-    public void testAllBiometricHaveException_rid_exception() throws PacketManagerException, ApisResourceAccessException, IOException, JsonProcessingException, IdrepoDraftException, IdrepoDraftReprocessableException {
+    public void testAllBiometricHaveException_rid_exception() throws PacketManagerException, ApisResourceAccessException, IOException, JsonProcessingException {
         String rid = "6654322111444444";
         String registrationType = "UPDATE";
         ProviderStageName stageName = ProviderStageName.BIO_DEDUPE;
@@ -1217,7 +1229,7 @@ public class UtilityTest {
         verify(utility, never()).getPacketCreatedDateTimeFromRid(anyString());
     }
 
-    private void stubDraftUin(String uin) throws IOException, ApisResourceAccessException, IdrepoDraftException, IdrepoDraftReprocessableException {
+    private void stubDraftUin(String uin) throws Exception {
         ResponseDTO draft = new ResponseDTO();
         draft.setIdentity(uin == null ? new java.util.HashMap<String, Object>()
                 : java.util.Collections.singletonMap("UIN", uin));
@@ -1256,20 +1268,6 @@ public class UtilityTest {
         assertNull(utility.getUinFromDraft("rid1"));
         when(idrepoDraftService.idrepoGetDraft("rid2", "demographics")).thenReturn(null);
         assertNull(utility.getUinFromDraft("rid2"));
-    }
-
-    @Test(expected = IdrepoDraftReprocessableException.class)
-    public void should_rethrowDraftException_when_allBiometricHaveExceptionDraftLookupIsRetryable() throws Exception {
-        when(idrepoDraftService.idrepoGetDraft(anyString(), anyString()))
-                .thenThrow(new IdrepoDraftReprocessableException("code", "retry"));
-        utility.allBiometricHaveException("rid1", "UPDATE", ProviderStageName.BIO_DEDUPE);
-    }
-
-    @Test(expected = IdrepoDraftException.class)
-    public void should_rethrowDraftException_when_allBiometricHaveExceptionDraftLookupFails() throws Exception {
-        when(idrepoDraftService.idrepoGetDraft(anyString(), anyString()))
-                .thenThrow(new IdrepoDraftException("code", "draft failed"));
-        utility.allBiometricHaveException("rid1", "UPDATE", ProviderStageName.BIO_DEDUPE);
     }
 
 }
