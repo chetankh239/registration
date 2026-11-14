@@ -1248,4 +1248,12 @@ public class UtilityTest {
                 .thenThrow(new IdrepoDraftReprocessableException("code", "retry"));
         utility.allBiometricHaveException("rid1", "UPDATE", ProviderStageName.BIO_DEDUPE);
     }
+
+    @Test(expected = IdrepoDraftException.class)
+    public void should_rethrowDraftException_when_allBiometricHaveExceptionDraftLookupFails() throws Exception {
+        when(idrepoDraftService.idrepoGetDraft(anyString(), anyString()))
+                .thenThrow(new IdrepoDraftException("code", "draft failed"));
+        utility.allBiometricHaveException("rid1", "UPDATE", ProviderStageName.BIO_DEDUPE);
+    }
+
 }
